@@ -15,15 +15,23 @@ class Game
     end
 
     def won?
-      return false
+      if Pole.victory_combination?(@type)
+       print "\n-----------------------\n!!!Игрок #{@name} выиграл!!!\n-----------------------\n"
+       return true
+     elsif Pole.full?
+       print "\n-----------------------\n!!!Ничья!!!\n-----------------------\n"
+       return true
+      else
+        return false
+      end
     end
 
     def xod
       puts "Ход игрока #{self.name}"
       position = gets.chomp.to_i
       if right_xod?(position)
-        izmen = $pole.change_pole(position, @type)
-        Pole.show_pole
+        izmen = $pole.change_pole(position, @type) #переменная $pole это глобальная переменная она обьявляется в функции Game.start
+        Pole.show_pole                             #и приравнивается новому обьекту класса поле
       else
         puts "Неверный ход, попробуйте снова."
         Pole.show_pole
@@ -50,6 +58,7 @@ class Game
 
   class Pole
     @@pole = [1,2,3,4,5,6,7,8,9]
+    @@combinations = [[0,1,2],[3,4,5],[6,7,8],[0,4,8],[2,4,6],[0,3,6],[1,4,7],[2,5,8]]
 
     def self.show_pole
       puts
@@ -65,6 +74,17 @@ class Game
         e = type if e == position
         e
        }
+    end
+
+    def self.full?
+      @@pole.all? { |e| e == "x" || e == "0"}
+    end
+
+    def self.victory_combination?(type)
+      if @@combinations.any? { |comb|  comb.all? { |e| @@pole[e] == type } }
+        return true
+      end
+      return false
     end
 
     def self.pole
@@ -98,5 +118,3 @@ until Game.game_over?
   break if Game.game_over?
   player_2.xod
 end
-
-puts "#{player_1} выиграл!!!"
