@@ -1,16 +1,31 @@
 class Game
   $count_players = 0
-  @@players = []
+  $x_choose = false
+  $o_choose = false
 
   class Player
-    attr_accessor :name
+    attr_accessor :name, :type
 
-    def initialize(name)
-      @name = name
-      if $count_players == 1
-        @type = "x"
-      else
-        @type = "0"
+    def initialize
+      $count_players += 1
+      puts "Введите имя #{$count_players} игрока: "
+      name = gets.chomp.strip
+      @name = name != "" ? name : "Player_#{$count_players}"
+      begin
+        puts "Вы хотите играть за 'x' или '0'?"
+        type = gets.chomp.strip
+        if type == 'x' && $x_choose == false
+          @type = "x"
+          $x_choose = true
+        elsif type == "0" && $o_choose == false
+          @type = "0"
+          $o_choose = true
+        else
+          raise "Упс... Похоже вы ввели что-то другое, попробуйте снова."
+        end
+      rescue Exception => e
+        puts e
+        retry
       end
     end
 
@@ -37,6 +52,7 @@ class Game
         Pole.show_pole
         self.xod
       end
+      won?
     end
 
     def right_xod?(position)
@@ -47,13 +63,6 @@ class Game
         return true
       end
     end
-  end
-
-  def self.new_player(name="player_#{$count_players}")
-    $count_players += 1
-    pl = Player.new(name)
-    @@players << pl
-    return pl
   end
 
   class Pole
@@ -92,29 +101,23 @@ class Game
     end
   end
 
-  def self.game_over?
-    return true if @@players.any? { |e| e.won? }
-    false
-  end
-
   def self.start
     $pole = Pole.new
+    puts "Привет, добро пожаловать в крестики-нолики!"
+    player_1 = Player.new
+    player_2 = Player.new
+    puts "Добро пожаловать в игру, #{player_1.name} и #{player_2.name}!"
+    Pole.show_pole
+
+    if player_1.type == "0"
+      player_1, player_2 = player_2, player_1
+    end
+
+    loop do
+      break if player_1.xod == true
+      break if player_2.xod == true
+    end
   end
 end
 
 Game.start
-puts "Привет, добро пожаловать в крестики-нолики!"
-puts "Введите имя первого игрока: "
-name_1 = gets.chomp
-player_1 = name_1 == "" ? Game.new_player() : Game.new_player(name_1)
-puts "Введите имя второго игрока: "
-name_2 = gets.chomp
-player_2 = name_2 == "" ? Game.new_player() : Game.new_player(name_2)
-puts "Добро пожаловать в игру, #{player_1.name} и #{player_2.name}!"
-Game::Pole.show_pole
-
-until Game.game_over?
-  player_1.xod
-  break if Game.game_over?
-  player_2.xod
-end
