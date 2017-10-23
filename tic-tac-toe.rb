@@ -4,28 +4,35 @@ class Game
   $o_choose = false
 
   class Player
-    attr_accessor :name, :type
+    attr_accessor :name, :type, :kind_player
 
-    def initialize
+    def initialize(kind_player)
+      @kind_player = kind_player
       $count_players += 1
-      puts "Введите имя #{$count_players} игрока: "
-      name = gets.chomp.strip
-      @name = name != "" ? name : "Player_#{$count_players}"
-      begin
-        puts "Вы хотите играть за 'x' или '0'?"
-        type = gets.chomp.strip
-        if type == 'x' && $x_choose == false
-          @type = "x"
-          $x_choose = true
-        elsif type == "0" && $o_choose == false
-          @type = "0"
-          $o_choose = true
-        else
-          raise "Упс... Похоже вы ввели что-то другое, попробуйте снова."
+
+      if @kind_player == :people
+        puts "Введите имя #{$count_players} игрока: "
+        name = gets.chomp.strip
+        @name = name != "" ? name : "Player_#{$count_players}"
+        begin
+          puts "Вы хотите играть за 'x' или '0'?"
+          type = gets.chomp.strip
+          if type == 'x' && $x_choose == false
+            @type = "x"
+            $x_choose = true
+          elsif type == "0" && $o_choose == false
+            @type = "0"
+            $o_choose = true
+          else
+            raise "Упс... Похоже вы ввели что-то другое, попробуйте снова."
+          end
+        rescue Exception => e
+          puts e
+          retry
         end
-      rescue Exception => e
-        puts e
-        retry
+      elsif @kind_player == :computer
+        name = "Computer_#{rand(100)}"
+        type = $x_choose == true ? "0" : "x"
       end
     end
 
@@ -41,8 +48,7 @@ class Game
       end
     end
 
-    def xod
-      puts "Ход игрока #{self.name}"
+    def xod_people
       position = gets.chomp.to_i
       if right_xod?(position)
         izmen = $pole.change_pole(position, @type) #переменная $pole это глобальная переменная она обьявляется в функции Game.start
@@ -51,6 +57,19 @@ class Game
         puts "Неверный ход, попробуйте снова."
         Pole.show_pole
         self.xod
+      end
+    end
+
+    def xod_computer
+
+    end
+
+    def xod
+      puts "Ход игрока #{self.name}"
+      if self.kind_player == :people
+        self.xod_people
+      elsif self.kind_player == :computer
+        self.xod_computer
       end
       won?
     end
@@ -101,21 +120,47 @@ class Game
     end
   end
 
+  def self.greeting
+    puts "Добро пожаловать в игру, #{@@player_1.name} и #{@@player_2.name}!"
+    if @@player_1.type == "0"
+      @@player_1, @@player_2 = @@player_2, @@player_1
+    end
+  end
+
+  def self.player_vs_player
+    @@player_1 = Player.new(:people)
+    @@player_2 = Player.new(:people)
+    greeting
+  end
+
+  def player_vs_comp
+    @@player_1 = Player.new(:people)
+    @@player_2 = Player.new(:computer)
+    greeting
+  end
+
+  def comp_vs_comp
+    @@player_1 = Player.new(:computer)
+    @@player_2 = Player.new(:computer)
+    greeting
+  end
+
   def self.start
     $pole = Pole.new
     puts "Привет, добро пожаловать в крестики-нолики!"
-    player_1 = Player.new
-    player_2 = Player.new
-    puts "Добро пожаловать в игру, #{player_1.name} и #{player_2.name}!"
-    Pole.show_pole
-
-    if player_1.type == "0"
-      player_1, player_2 = player_2, player_1
+    puts "Выберите режим игры: 1 игрок против игрока; 2 игрок против компьютера; компьютер против компьютера"
+    case gets.chomp.strip.to_i
+    when 1 then player_vs_player
+    when 2 then player_vs_comp
+    when 3 then comp_vs_comp
+    else player_vs_player
     end
 
+    Pole.show_pole #показываем поле
+
     loop do
-      break if player_1.xod == true
-      break if player_2.xod == true
+      break if @@player_1.xod == true
+      break if @@player_2.xod == true
     end
   end
 end
