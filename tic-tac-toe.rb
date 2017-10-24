@@ -2,6 +2,7 @@ class Game
   $count_players = 0
   $x_choose = false
   $o_choose = false
+  $anti_vilka = true
 
   class Player
     attr_accessor :name, :type, :kind_player
@@ -83,7 +84,68 @@ class Game
       return false
     end
 
+    def anti_vilka(angle)
+      position = 0
+      case angle
+      when 0
+        if free?(2)
+          position = 2
+        elsif free?(6)
+          position = 6
+        elsif free?(5)
+          position = 5
+        elsif free?(7)
+          position = 7
+        else
+          $anti_vilka = false
+        end
+      when 2
+        if free?(0)
+          position = 0
+        elsif free?(8)
+          position = 8
+        elsif free?(3)
+          position = 3
+        elsif free?(7)
+          position = 7
+        else
+          $anti_vilka = false
+        end
+      when 6
+        if free?(0)
+          position = 0
+        elsif free?(8)
+          position = 8
+        elsif free?(1)
+          position = 1
+        elsif free?(5)
+          position = 5
+        else
+          $anti_vilka = false
+        end
+      when 8
+        if free?(6)
+          position = 6
+        elsif free?(2)
+          position = 2
+        elsif free?(1)
+          position = 1
+        elsif free?(3)
+          position = 5
+        else
+          $anti_vilka = false
+        end
+      end
+      position
+    end
+
+    def anti_vilka?(i)
+      anti_vilka(i)
+      $anti_vilka
+    end
+
     def xod_computer
+      t = true
       k = false
       position = 0
       enemy_type = @type == "x" ? "0" : "x"
@@ -95,16 +157,20 @@ class Game
         position = @@next_xod
       else
         for i in [0,2,6,8] do
-          if free?(i)
+          if Pole.pole[i] == enemy_type && anti_vilka?(i)
+            position = anti_vilka(i)+1
+            k = true
+            break
+          elsif free?(i)
             k = true
             position=i+1
             break
           end
         end
         if k == false
-          loop do
+          while t do
             position = 1+rand(9)
-            break if free?(position-1)
+            t = false if free?(position-1)
           end
         end
       end
@@ -211,8 +277,7 @@ class Game
     Pole.show_pole #показываем поле
 
     loop do
-      break if @@player_1.xod == true
-      break if @@player_2.xod == true
+      break if @@player_1.xod == true || @@player_2.xod == true
     end
   end
 end
