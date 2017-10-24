@@ -31,8 +31,8 @@ class Game
           retry
         end
       elsif @kind_player == :computer
-        name = "Computer_#{rand(100)}"
-        type = $x_choose == true ? "0" : "x"
+        @name = "Computer_#{rand(100)}"
+        @type = $x_choose == true ? "0" : "x"
       end
     end
 
@@ -51,7 +51,7 @@ class Game
     def xod_people
       position = gets.chomp.to_i
       if right_xod?(position)
-        izmen = $pole.change_pole(position, @type) #переменная $pole это глобальная переменная она обьявляется в функции Game.start
+        $pole.change_pole(position, @type) #переменная $pole это глобальная переменная она обьявляется в функции Game.start
         Pole.show_pole                             #и приравнивается новому обьекту класса поле
       else
         puts "Неверный ход, попробуйте снова."
@@ -61,7 +61,12 @@ class Game
     end
 
     def xod_computer
+      position = 0
+      enemy_type = @type == "x" ? "0" : "x"
+      position = 5 if free?(4)
 
+      $pole.change_pole(position, @type)
+      Pole.show_pole
     end
 
     def xod
@@ -74,19 +79,23 @@ class Game
       won?
     end
 
+    def free?(index)
+      return true until ["x","0"].any? { |symbol| Pole.pole[index] == symbol}
+    end
+
     def right_xod?(position)
-      return false if position < 1 || position > 9
-      if Pole.pole[position-1] == "x" || Pole.pole[position-1] == "0"
-        return false
-      else
-        return true
-      end
+      return false if (position < 1 || position > 9 || !free?(position-1))
+      true
     end
   end
 
   class Pole
     @@pole = [1,2,3,4,5,6,7,8,9]
     @@combinations = [[0,1,2],[3,4,5],[6,7,8],[0,4,8],[2,4,6],[0,3,6],[1,4,7],[2,5,8]]
+
+    def self.pole_blank?
+      @@pole.all? { |e| e != "x" && e != "0"}
+    end
 
     def self.show_pole
       puts
@@ -133,13 +142,13 @@ class Game
     greeting
   end
 
-  def player_vs_comp
+  def self.player_vs_comp
     @@player_1 = Player.new(:people)
     @@player_2 = Player.new(:computer)
     greeting
   end
 
-  def comp_vs_comp
+  def self.comp_vs_comp
     @@player_1 = Player.new(:computer)
     @@player_2 = Player.new(:computer)
     greeting
@@ -164,5 +173,6 @@ class Game
     end
   end
 end
+
 
 Game.start
