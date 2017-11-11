@@ -1,7 +1,5 @@
 class Game
   $count_players = 0
-  $x_choose = false
-  $o_choose = false
   $anti_vilka = true
 
   class Player
@@ -46,7 +44,7 @@ class Game
 
     def won?
       if Pole.victory_combination?(@type)
-       print "\n-----------------------\n!!!Игрок #{@name} выиграл!!!\n-----------------------\n"
+       print "\n--------------------------------\n!!!Игрок #{@name} выиграл!!!\n--------------------------------\n"
        return true
      elsif Pole.full?
        print "\n-----------------------\n!!!Ничья!!!\n-----------------------\n"
@@ -265,6 +263,8 @@ class Game
 
   def self.start
     $pole = Pole.new
+    $x_choose = false
+    $o_choose = false
     puts "Привет, добро пожаловать в крестики-нолики!"
     puts "Выберите режим игры: 1 игрок против игрока; 2 игрок против компьютера; 3 компьютер против компьютера"
     case gets.chomp.strip.to_i
@@ -283,4 +283,4 @@ class Game
 end
 
 
-Game.start
+# Game.start
